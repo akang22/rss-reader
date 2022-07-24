@@ -5,8 +5,8 @@
 //     all the JavaScript used in this file, but that means we can do some
 //     interesting interactive stuff."
 
-import { useState } from "react";
-
+import { Suspense, useState, useTransition } from "react";
+import { suspensify } from "../lib/suspensify";
 import { cn } from "../lib/cn";
 
 /**
@@ -38,10 +38,21 @@ const SaveButton = ({
 
   const [clientSideIsSaved, setClientSideIsSaved] = useState();
   const isSaved = clientSideIsSaved ?? initialIsSaved;
+  const [isPending, startTransition] = useTransition();
+  const [promise, setPromise] = useState();
+
+  if (promise) {
+    promise.read();
+  }
 
   const toggle = () => {
-    // 🐔 "This is probably where you'll need to use the `save()` and
-    //     `unsave()` functions."
+    startTransition(() => {
+      if (isSaved) {
+        setPromise(suspensify(unsave()));
+      } else {
+        setPromise(suspensify(save()));
+      }
+    });
   };
 
   const save = async () => {
@@ -88,22 +99,14 @@ const SaveButton = ({
     }
   };
 
-  // 🐔 "Good luck. This part might be difficult. I encourage you to build this
-  //     using `useTransition()` so you can learn what it is and how it relates to...
-  //
-  //     ...wait for it...
-  //
-  //
-  //     ...Suspense. Speaking of Suspense, you'll probably need to use the
-  //     `suspensify()` function from `lib/suspensify.js`"
 
   return (
-    <button
-      onClick={toggle}
-      className={cn("capsize", isSaved && "font-bold text-rose-500")}
-    >
-      {isSaved ? "Unsave" : "Save"}
-    </button>
+      <button
+        onClick={toggle}
+        className={cn("capsize", (isSaved || isPending) && "font-bold text-rose-500")}
+      >
+        {isPending ? "loading..." : isSaved ? "Unsave" : "Save"}
+      </button>
   );
 };
 

@@ -7,6 +7,8 @@
  */
 
 import Layout from "../components/Layout.server";
+import * as savedDB from "../lib/savedDB";
+import Feed from "../components/Feed.server.js";
 
 /**
  * The app's "Saved" page. It lists RSS feed items that have been saved.
@@ -14,13 +16,16 @@ import Layout from "../components/Layout.server";
  * Note: This component only renders on the server since its filename ends with
  * `.server.js`. Its JavaScript will not be sent to the browser.
  */
-export default function SavedPage() {
+export default function SavedPage({ items = [], saved = [] }) {
   return (
     <Layout activeRoute="/saved">
-      <p>
-        🐔 &ldquo;This page won&rsquo;t work until you write it! Check out{" "}
-        <code>pages/saved.server.js</code> for details.&rdquo;
-      </p>
+      {saved.length == 0 ? (
+        <h2 className="font-medium tracking-tight text-3xl capsize lg:text-6xl lg:leading-tight">
+          Looks empty here. Save some posts first and check back!
+        </h2>
+      ) : (
+        <Feed items={items} saved={saved} />
+      )}
     </Layout>
   );
 }
@@ -33,11 +38,13 @@ export default function SavedPage() {
  * above.
  */
 export const getServerSideProps = async () => {
-  // 🐔 "Looks like we got nothin' here to start from. We need to load your saved
-  //     items and send them to the page as props. *Something* tells me this
-  //     was also done on the home page. Hmmmmmmmmm..."
+  const saved = await savedDB.loadAll();
+  const items = saved;
 
   return {
-    props: {},
+    props: {
+      items,
+      saved,
+    },
   };
 };

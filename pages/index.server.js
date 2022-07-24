@@ -14,7 +14,7 @@
  */
 
 import * as savedDB from "../lib/savedDB";
-
+import { fetchRSSFeedItems } from "../lib/fetchRSSFeedItems";
 import Layout from "../components/Layout.server.js";
 import Feed from "../components/Feed.server.js";
 
@@ -27,24 +27,7 @@ import Feed from "../components/Feed.server.js";
 export default function IndexPage({ items = [], saved = [] }) {
   return (
     <Layout activeRoute="/">
-      {items.length > 0 ? (
-        <Feed items={items} saved={saved} />
-      ) : (
-        <div className="grid gap-4 italic text-black/40 text-sm capsize">
-          <p>
-            It&rsquo;s quiet here. Too quiet. Open{" "}
-            <code className="rounded bg-black/5 px-1 py-0.5">config.js</code>{" "}
-            and add some RSS feeds with content!
-          </p>
-          <p>
-            (Or maybe you still need to update{" "}
-            <code className="rounded bg-black/5 px-1 py-0.5">
-              pages/index.server.js
-            </code>{" "}
-            with your own code.)
-          </p>
-        </div>
-      )}
+      <Feed items={items} saved={saved} />
     </Layout>
   );
 }
@@ -59,7 +42,7 @@ export default function IndexPage({ items = [], saved = [] }) {
 export const getServerSideProps = async () => {
   // 🐔 "This is where you'll load the RSS feed items. If only we had a
   //     `fetchRSSFeedItems()` function somewhere..."
-  const items = [];
+  const items = await fetchRSSFeedItems();
 
   const saved = await savedDB.loadAll();
 
